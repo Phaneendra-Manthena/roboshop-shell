@@ -5,8 +5,8 @@ ZONE_ID="Z00686301L2WT2U9Z4BFW"
 DOMAIN="phanidevops.cloud"
 SG_NAME="allow-all"
 env=dev
+KEY_NAME="phani"   # Add the key pair name here
 #############################
-
 
 
 create_ec2() {
@@ -16,6 +16,7 @@ create_ec2() {
       --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${COMPONENT}}, {Key=Monitor,Value=yes}]" "ResourceType=spot-instances-request,Tags=[{Key=Name,Value=${COMPONENT}}]"  \
       --instance-market-options "MarketType=spot,SpotOptions={SpotInstanceType=persistent,InstanceInterruptionBehavior=stop}"\
       --security-group-ids ${SGID} \
+      --key-name ${KEY_NAME}   # Pass the key pair name here
       | jq '.Instances[].PrivateIpAddress' | sed -e 's/"//g')
 
   sed -e "s/IPADDRESS/${PRIVATE_IP}/" -e "s/COMPONENT/${COMPONENT}/" -e "s/DOMAIN/${DOMAIN}/" route53.json >/tmp/record.json
@@ -23,8 +24,8 @@ create_ec2() {
   if [ $? -eq 0 ]; then
     echo "Server Created - SUCCESS - DNS RECORD - ${COMPONENT}.${DOMAIN}"
   else
-     echo "Server Created - FAILED - DNS RECORD - ${COMPONENT}.${DOMAIN}"
-     exit 1
+    echo "Server Created - FAILED - DNS RECORD - ${COMPONENT}.${DOMAIN}"
+    exit 1
   fi
 }
 
@@ -38,7 +39,7 @@ fi
 
 SGID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=${SG_NAME} | jq  '.SecurityGroups[].GroupId' | sed -e 's/"//g')
 if [ -z "${SGID}" ]; then
-  echo "Given Security Group does not exit"
+  echo "Given Security Group does not exist"
   exit 1
 fi
 
@@ -47,3 +48,4 @@ for component in catalogue cart user shipping payment frontend mongodb mysql rab
   COMPONENT="${component}-${env}"
   create_ec2
 done
+e
