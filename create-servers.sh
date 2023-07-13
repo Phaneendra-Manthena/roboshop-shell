@@ -3,7 +3,7 @@
 ##### Change these values ###
 ZONE_ID="Z00686301L2WT2U9Z4BFW"
 DOMAIN="phanidevops.cloud"
-SG_NAME="allow-all"
+SG_NAME="allow -all"
 env=dev
 #############################
 
